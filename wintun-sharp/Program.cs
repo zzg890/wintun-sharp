@@ -49,8 +49,11 @@ internal unsafe class Program
         string gateway = "10.6.7.1";
 
         Process.Start("cmd.exe", $"/c start ping -t {gateway}");
-        wintun tun = new wintun("Demo", "Example");
+        WinTunnel tun = new WinTunnel("Demo", "Example");
+
+       
         tun.Configure(IPAddress.Parse(ip), IPAddress.Parse(gateway), 24);
+        
         new Thread(() =>
         {
             for (; ; )

@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Runtime.InteropServices;
 
-internal unsafe class wintun
+internal unsafe class WinTunnel : IDisposable
 {
     [DllImport("wintun.dll", SetLastError = true)]
     private static extern IntPtr WintunCreateAdapter(
@@ -67,7 +67,7 @@ internal unsafe class wintun
 
     private IntPtr WaitHandle, Adapter, Session;
 
-    public wintun(string Name, string TunnelType)
+    public WinTunnel(string Name, string TunnelType)
     {
         Guid ExampleGuid = Guid.NewGuid();
         Adapter = WintunCreateAdapter(Name, TunnelType, ref ExampleGuid);
@@ -177,6 +177,8 @@ internal unsafe class wintun
     public void Configure(IPAddress Address, IPAddress Gateway, byte PrefixLength)
     {
         WintunGetAdapterLUID(Adapter, out ulong Luid);
+
+
         {
             MIB_UNICASTIPADDRESS_ROW AddressRow = default;
             InitializeUnicastIpAddressEntry(ref AddressRow);
@@ -201,5 +203,13 @@ internal unsafe class wintun
             uint LastError = CreateIpForwardEntry2(ref row);
             if (LastError != 0) throw new InvalidOperationException();
         }
+    }
+
+    public void Dispose()
+    {
+        Marshal.FreeHGlobal(WaitHandle);
+        Marshal.FreeHGlobal(Adapter);
+        Marshal.FreeHGlobal(Session);
+
     }
 }
